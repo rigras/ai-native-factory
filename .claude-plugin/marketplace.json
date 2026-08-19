@@ -1,0 +1,15 @@
+{
+  "name": "ai-factory",
+  "description": "GuatiFactory marketplace — the AI-native engineering starter pack as an installable plugin.",
+  "owner": {
+    "name": "rigras"
+  },
+  "plugins": [
+    {
+      "name": "guati-factory",
+      "source": "./plugins/guati-factory",
+      "description": "GuatiFactory — the AI Layer for agentic engineering: document pipeline (PRD/TRD/spec ticket factory), PIV loop, review, system evolution, and the engineering constitution.",
+      "version": "1.0.0"
+    }
+  ]
+}

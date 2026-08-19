@@ -1,0 +1,8 @@
+{
+  "name": "guati-factory",
+  "description": "GuatiFactory — the AI Layer for agentic engineering: the full document pipeline (evidence → PRD → TRD → ticket factory with human gates and change requests), the PIV loop (plan → implement → validate), code review, system evolution, and the engineering constitution. Install once, use in every repo.",
+  "version": "1.0.0",
+  "author": {
+    "name": "rigras"
+  }
+}

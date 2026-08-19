@@ -11,24 +11,105 @@ your own code** and wire it into your team's process.
 > reading *your* actual code. That's the whole idea: the AI Layer is your team's own
 > knowledge and process, encoded.
 
-## Install
+## Install (as the GuatiFactory plugin)
 
-```bash
-# 1. Clone this pack
-git clone https://github.com/coleam00/ai-native-starter-pack
-# 2. Copy the AI Layer into your project (skills/agents/references + the Atlassian .mcp.json)
-cp -r ai-native-starter-pack/.claude <your-repo>/.claude
-cp ai-native-starter-pack/.mcp.json <your-repo>/.mcp.json
-# 2b. Optional: the PR review workflow (needs a CLAUDE_CODE_OAUTH_TOKEN repo secret)
-cp -r ai-native-starter-pack/.github <your-repo>/.github
-# 3. In your repo, derive your rules from your real code:
-#    run  /create-rules   → writes CLAUDE.md + .claude/context/ (cited to your code)
-# 4. Wire external context: the pack ships a .mcp.json for the Atlassian MCP (Jira +
-#    Confluence) - edit/replace it for your stack - then
-#    run  /prime <jira-keys> <confluence-page-ids>
+This repo is a Claude Code **plugin marketplace** (`ai-factory`) hosting the
+**`guati-factory`** plugin (all the skills, agents, references, and the Atlassian MCP
+wiring). Install it once at user scope and the whole AI Layer is available in
+**every** repo you open:
+
+```
+/plugin marketplace add rigras/ai-native-factory
+/plugin install guati-factory@ai-factory          # choose "User" scope
 ```
 
-(Git submodule also works if you want to track upstream updates.)
+Once installed, skills are invoked with the plugin namespace: `/guati-factory:prime`,
+`/guati-factory:spec`, `/guati-factory:plan-feature`, etc.
+
+**Per-team repos** — to have the marketplace auto-registered for anyone who clones a
+project, add this to that repo's `.claude/settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "ai-factory": {
+      "source": { "source": "github", "repo": "rigras/ai-native-factory" }
+    }
+  },
+  "enabledPlugins": { "guati-factory@ai-factory": true }
+}
+```
+
+**Updates**: bump the `version` in `.claude-plugin/marketplace.json` when the plugin
+changes; consumers pick it up with `/plugin marketplace update ai-factory` (or by
+enabling auto-update for the marketplace in `/plugin`).
+
+**Extras not shipped in the plugin**: the PR review workflow is copied per-repo
+(`cp -r .github <your-repo>/.github`, needs a `CLAUDE_CODE_OAUTH_TOKEN` repo secret).
+
+Then, in each project: run `/guati-factory:create-rules` to derive `CLAUDE.md` +
+`.claude/context/` + `CONSTITUTION.md` from your real code, and
+`/guati-factory:prime <jira-keys> <confluence-page-ids>` to pull external context (the
+plugin ships the Atlassian MCP).
+
+## The workflow, step by step
+
+You just got handed a repo and a list of features. This is the whole flow — every
+command is a skill from the plugin (namespace prefix omitted for readability):
+
+**Phase 0 — Land on the repo (once per repo)**
+
+1. `/init-project` — set it up and run it locally (env, deps, DB, migrations, dev server).
+2. `/create-rules` — build the repo's AI Layer: a descriptive `CLAUDE.md` +
+   `.claude/context/` modules (cited to the real code) and the normative
+   `CONSTITUTION.md` (engineering standard: hexagonal architecture by default,
+   framework-coexistence ADRs, known-gaps table for messy brownfields).
+
+**Phase 1 — From "some features" to an executable backlog** (rite is proportional:
+small well-specified features can skip straight to Phase 2)
+
+3. `/create-prd` — formalize the requirements by iterating over the evidence
+   (conversations, reviewer feedback, docs) until the done-criteria checklist passes;
+   unresolvables become open questions with owners.
+4. `/create-trd` — only if architecture decisions are open: the system map, aspect by
+   aspect, each decision researched (web-verified, dated) and recorded as an ADR.
+5. `/spec` — the ticket factory: slices the PRD into PIV-sized vertical tickets
+   (user-story format, max 5 Given/When/Then criteria, an agent-validation checklist)
+   with a dependency graph and wave order. Tickets are born `pending-approval` — **you
+   approve before anything is published**; Jira/Confluence are optional.
+
+**Phase 2 — The PIV loop, one ticket per clean session**
+
+6. `/prime` — load the codebase context relevant to the ticket.
+7. `/plan-feature` — **P**lan: a one-pass implementation plan; must comply with the
+   constitution. You approve the plan (fixing a plan costs a sentence; a diff, 300 lines).
+8. `/execute` — **I**mplement: build strictly from the approved plan.
+9. `/validate` — **V**alidate: tests, type-check, lint, build — the gate before any PR.
+10. `/code-review` → `/code-review-fix` — review against the standards, the
+    constitution, and the ticket's agent-validation checklist. Then `/commit`.
+
+Independent tickets (Wave 1 of the dependency graph) can run **in parallel** with
+`/new-worktrees` → one PIV loop each → `/merge-worktrees`.
+
+**Phase 3 — The feedback loops (what makes the system improve)**
+
+- After a feature: `/execution-report` → `/system-review` — what diverged from the
+  plan and which rule/context/skill to tighten so the next ticket goes better.
+- On a bug: `/rca` → `/implement-fix` — root cause, fix, regression test, and a rule
+  so the bug class can't recur.
+- When implementation contradicts the PRD/TRD: run `/spec` again — it detects the
+  existing folder, files a Change Request, fixes the **source docs first**, and
+  regenerates only the affected tickets (back through your approval gate).
+
+```
+/init-project → /create-rules                                   (once per repo)
+/create-prd → [/create-trd if needed] → /spec                   (once per feature batch)
+per ticket:   /prime → /plan-feature → /execute → /validate → /code-review → /commit
+after:        /execution-report → /system-review
+```
+
+Your three decision points: approve the backlog (`/spec`), approve each plan
+(`/plan-feature`), approve the review. Everything else the agent executes.
 
 ## What's in here
 
@@ -37,8 +118,11 @@ cp -r ai-native-starter-pack/.github <your-repo>/.github
 - `prime-backend` / `prime-frontend` - focused priming for one side of a full-stack repo
 
 **Build the layer (codebase-specific, derived)**
-- `create-rules` - **derive `CLAUDE.md` + `.claude/context/` from your real codebase** (Brownfield Type A). The one you run first per project.
-- `create-prd` - greenfield: turn an idea into a PRD
+- `create-rules` - **derive `CLAUDE.md` + `.claude/context/` from your real codebase** (Brownfield Type A), and instantiate the normative **`CONSTITUTION.md`** (engineering principles: hexagonal architecture, testing strategy, ADR discipline) from best practice. The one you run first per project.
+
+**Product definition (evidence → PRD → TRD → tickets)**
+- `create-prd` - build a PRD by iterating over the evidence (conversations, reviewer feedback, spreadsheets) until a verifiable done-criteria checklist passes; gaps become open questions with owners
+- `create-trd` - the architecture map, aspect by aspect: research candidates (web-verified, dated), decide with ADRs, defer implementation detail. The bridge between the PRD and `spec`.
 
 **The PIV loop** (Plan → Implement → Validate - the core methodology)
 - `plan-feature` - **P**lan: a context-rich, one-pass implementation plan
@@ -56,7 +140,7 @@ cp -r ai-native-starter-pack/.github <your-repo>/.github
 - `execution-report` - capture what a loop actually did vs the plan
 
 **Slicing & parallelism**
-- `spec` - slice an epic / PRD into PIV-sized tickets with a dependency graph
+- `spec` - the ticket factory: slice an epic / PRD into PIV-sized tickets (user-story format with Given/When/Then criteria + an agent-validation checklist) with a dependency graph and wave order. Local-first (`docs/specs/`), human approval gate before anything is published, Jira/Confluence optional. Feedback on existing tickets runs as Change Requests with selective regeneration.
 - `new-worktrees` / `merge-worktrees` - run independent tickets in parallel git worktrees
 
 **Examples / extras**

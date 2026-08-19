@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "ai-factory": {
+      "source": {
+        "source": "github",
+        "repo": "rigras/ai-native-factory"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "guati-factory@ai-factory": true
+  }
+}
