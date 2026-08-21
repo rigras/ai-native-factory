@@ -81,11 +81,19 @@ small well-specified features can skip straight to Phase 2)
 **Phase 2 — The PIV loop, one ticket per clean session**
 
 6. `/prime` — load the codebase context relevant to the ticket.
-7. `/plan-feature` — **P**lan: a one-pass implementation plan; must comply with the
-   constitution. You approve the plan (fixing a plan costs a sentence; a diff, 300 lines).
-8. `/execute` — **I**mplement: build strictly from the approved plan.
-9. `/validate` — **V**alidate: tests, type-check, lint, build — the gate before any PR.
-10. `/code-review` → `/code-review-fix` — review against the standards, the
+7. `/design` — **only when the ticket carries decisions that outlive it** (a new
+   contract, boundary, schema, pattern, or eval-worthy behavior): decide the approach
+   — 2-3 options, trade-offs, the frontier contract — in a human-gated design doc
+   *before* any plan. Trivial pattern-following tickets skip this in two lines (the
+   skill classifies itself). Fixing an approach costs a conversation; a plan, a
+   sentence; a diff, 300 lines. If designing reveals the ticket is mis-sliced, it
+   emits a Change Request back through `/spec`.
+8. `/plan-feature` — **P**lan: a one-pass implementation plan; must comply with the
+   constitution and the approved design when one exists (and it stops and ratchets
+   back to `/design` if it hits an undecided approach). You approve the plan.
+9. `/execute` — **I**mplement: build strictly from the approved plan.
+10. `/validate` — **V**alidate: tests, type-check, lint, build — the gate before any PR.
+11. `/code-review` → `/code-review-fix` — review against the standards, the
     constitution, and the ticket's agent-validation checklist. Then `/commit`.
 
 Independent tickets (Wave 1 of the dependency graph) can run **in parallel** with
@@ -104,7 +112,7 @@ Independent tickets (Wave 1 of the dependency graph) can run **in parallel** wit
 ```
 /init-project → /create-rules                                   (once per repo)
 /create-prd → [/create-trd if needed] → /spec                   (once per feature batch)
-per ticket:   /prime → /plan-feature → /execute → /validate → /code-review → /commit
+per ticket:   /prime → [/design if outliving decisions] → /plan-feature → /execute → /validate → /code-review → /commit
 after:        /execution-report → /system-review
 ```
 
@@ -125,7 +133,8 @@ Your three decision points: approve the backlog (`/spec`), approve each plan
 - `create-trd` - the architecture map, aspect by aspect: research candidates (web-verified, dated), decide with ADRs, defer implementation detail. The bridge between the PRD and `spec`.
 
 **The PIV loop** (Plan → Implement → Validate - the core methodology)
-- `plan-feature` - **P**lan: a context-rich, one-pass implementation plan
+- `design` - decide the **approach** for a ticket that carries outliving decisions (contract, boundary, schema, shape, eval strategy) in a human-gated design doc before the plan; self-classifying — trivial tickets skip in two lines
+- `plan-feature` - **P**lan: a context-rich, one-pass implementation plan; binding on the approved design when one exists
 - `execute` - **I**mplement: build strictly from the approved plan
 - `validate` - **V**alidate: run the project's tests / type-check / lint / build before a PR
 - `commit` - structured commit at the end of a loop

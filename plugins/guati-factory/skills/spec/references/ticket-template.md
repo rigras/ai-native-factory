@@ -14,6 +14,11 @@ project's docs use; keep IDs (`T-NNN`) and states in the canonical form.
 - **Traces to**: PRD objective(s) [O1, O2] · TRD section(s) [§2, §5]
 - **Depends on**: [none | T-00X, T-00Y] · **Wave**: [N]
 - **Files likely touched**: [best-effort estimate — paths or areas]
+- **Design**: [likely-needed | skip (reason)] <!-- best-effort hint: does the ticket
+  carry decisions that outlive it (new contract/boundary/schema/pattern, eval-worthy
+  behavior, several plausible shapes)? /design's own classification makes the final
+  call; /plan-feature's ratchet backstops both. -->
+
 
 ## Goal
 [1-3 sentences: what problem this ticket solves and what value it delivers.]

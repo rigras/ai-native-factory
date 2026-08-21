@@ -16,6 +16,18 @@ Transform a feature request into a **comprehensive implementation plan** through
 
 **Key Philosophy**: Context is King. The plan must contain ALL information needed for implementation - patterns, mandatory reading, documentation, validation commands - so the execution agent succeeds on the first attempt.
 
+## Approved Design (binding input)
+
+Before Phase 1, check `docs/designs/` for an **approved** design document matching the
+ticket (`T-NNN-*-design.md`, State: approved). If one exists, it is **binding**:
+
+- Transcribe its §2 (Global constraints) verbatim as the plan's Global Constraints.
+- Plan within its §3 contract and §4 shape — the plan does not renegotiate them.
+- A deviation means amending the design first, back through its human gate — never a
+  silent departure inside the plan.
+
+A design still in `draft` state blocks planning: ask the human to approve or revise it.
+
 ## Planning Process
 
 ### Phase 1: Feature Understanding
@@ -90,6 +102,11 @@ So that <benefit/value>
 - If requirements are unclear at this point, ask the user to clarify before you continue
 - Get specific implementation preferences (libraries, approaches, patterns)
 - Resolve architectural decisions before proceeding
+- **Ratchet to /design**: if planning surfaces an undecided *approach* — competing
+  shapes, an unpinned contract or interface, a schema/state-model choice, behavior
+  needing an eval strategy — and no approved design covers it, **stop and invoke
+  `/design`**. Do not resolve it silently inside the plan; the plan is the wrong
+  altitude for a decision that outlives the ticket.
 
 ### Phase 3: External Research & Documentation
 
